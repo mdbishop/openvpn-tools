@@ -47,7 +47,7 @@ remote #{HOST} 1194
 resolv-retry infinite
 }
 
-File.open("#{dir}/Contents/Resources/config.ovpn", 'w') do |f|
+File.open("#{dir}/config.ovpn", 'w') do |f|
   f.write(config)
 end
 
