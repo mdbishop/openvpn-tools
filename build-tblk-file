@@ -6,7 +6,7 @@ if not ARGV[0]
   raise "Provide an argument"
 end
 
-files = ["#{ARGV[0]}.key", "#{ARGV[0]}.crt", "ca.crt", "ta.key"]
+files = ["#{ARGV[0]}.p12", "ta.key"]
 
 files.each do |file|
   if not File.exists?("#{CA_DIR}/#{file}")
@@ -20,32 +20,31 @@ if File.directory?(dir)
   raise "Directory #{dir} exists"
 end
 
-FileUtils.mkdir_p("#{dir}/Contents/Resources")
+FileUtils.mkdir_p("#{dir}/")
 
 files.each do |file|
-  FileUtils.copy("#{CA_DIR}/#{file}", "#{dir}/Contents/Resources/#{file}")
+  FileUtils.copy("#{CA_DIR}/#{file}", "#{dir}/#{file}")
 end
 
 config = %{
+port 1194
+mssfix 1300
 client
-dev tun
+tls-client
+pkcs12 #{ARGV[0]}.p12
+comp-lzo no
+keepalive 10 60
+ping-timer-rem
+push-peer-info
+persist-tun
+persist-key
+verb 3
 proto udp
+pull
+tls-auth ta.key 0
+nobind
 remote #{HOST} 1194
 resolv-retry infinite
-nobind
-persist-key
-persist-tun
-ca ca.crt
-cert #{ARGV[0]}.crt
-key #{ARGV[0]}.key
-ns-cert-type server
-tls-auth ta.key 1
-cipher AES-256-CBC
-comp-lzo
-verb 3
-ping 10
-ping-restart 60
-explicit-exit-notify 2
 }
 
 File.open("#{dir}/Contents/Resources/config.ovpn", 'w') do |f|
